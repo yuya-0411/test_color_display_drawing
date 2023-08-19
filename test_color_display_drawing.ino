@@ -53,11 +53,16 @@ void setup()
   // display.drawLine(0, 0, 400, 240, ILI9327_GREEN);
 
   // 矩形の描画
-  display.drawRect(100, 60, 200, 120, ILI9327_BLUE);
-  // display.fillRect(0, 0, 400, 240, ILI9327_WHITE);
+  // display.drawRect(100, 60, 200, 120, ILI9327_BLUE);
+  // display.fillRect(100, 60, 200, 120, ILI9327_BLUE);
 
   // 円の描画
+  // display.drawCircle(200, 120, 50, ILI9327_RED);
   // display.fillCircle(200, 120, 50, ILI9327_RED);
+
+  // 三角形の描画
+  // display.drawTriangle(150, 150, 200, 90, 250, 150, ILI9327_BLACK);
+  display.fillTriangle(150, 150, 200, 90, 250, 150, ILI9327_BLACK);
 
 
   delay(10);
