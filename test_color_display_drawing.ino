@@ -49,7 +49,15 @@ void setup()
   //   }
   // }
 
-  display.drawLine(0, 0, 400, 240, ILI9327_GREEN);
+  // 線の描画
+  // display.drawLine(0, 0, 400, 240, ILI9327_GREEN);
+
+  // 矩形の描画
+  display.drawRect(100, 60, 200, 120, ILI9327_BLUE);
+  // display.fillRect(0, 0, 400, 240, ILI9327_WHITE);
+
+  // 円の描画
+  // display.fillCircle(200, 120, 50, ILI9327_RED);
 
 
   delay(10);

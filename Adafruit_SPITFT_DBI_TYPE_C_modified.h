@@ -229,10 +229,30 @@ public:
   // solo -- that is, as graphics primitives in themselves, not invoked by
   // higher-level primitives (which should use the functions above).
   void drawPixel(int16_t x, int16_t y, uint16_t color);
+  virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                        uint16_t color);
   void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
   void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
   void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+  void drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+  void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+                        uint16_t color);
+  void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+  void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
+                        int16_t delta, uint16_t color);
+  // void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
+  //                   int16_t y2, uint16_t color);
+  // void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
+  //                   int16_t y2, uint16_t color);
+  // void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+  //                    int16_t radius, uint16_t color);
+  // void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
+  //                    int16_t radius, uint16_t color);
+  // void drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
+  //               uint16_t bg, uint8_t size_x, uint8_t size_y);
+  // void setTextSize(uint8_t sx, uint8_t sy);
+  // void setFont(const GFXfont *f = NULL);
   // A single-pixel push encapsulated in a transaction. I don't think
   // this is used anymore (BMP demos might've used it?) but is provided
   // for backward compatibility, consider it deprecated:

@@ -1702,6 +1702,26 @@ void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawPixel(int16_t x, int16_t y, uint16
   }
 }
 
+/**************************************************************************/
+/*!
+   @brief   Draw a rectangle with no fill color
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    w   Width in pixels
+    @param    h   Height in pixels
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                            uint16_t color) {
+  startWrite();
+  writeFastHLine(x, y, w, color);
+  writeFastHLine(x, y + h - 1, w, color);
+  writeFastVLine(x, y, h, color);
+  writeFastVLine(x + w - 1, y, h, color);
+  endWrite();
+}
+
 /*!
     @brief  Draw a filled rectangle to the display. Self-contained and
             provides its own transaction as needed (see writeFillRect() or
@@ -1845,6 +1865,17 @@ void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawFastVLine(int16_t x, int16_t y, in
     }
   }
 }
+
+/**************************************************************************/
+/*!
+   @brief    Draw a line
+    @param    x0  Start point x coordinate
+    @param    y0  Start point y coordinate
+    @param    x1  End point x coordinate
+    @param    y1  End point y coordinate
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
 void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                                     uint16_t color) {
   // Update in subclasses if desired!
@@ -1862,6 +1893,183 @@ void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawLine(int16_t x0, int16_t y0, int16
     endWrite();
   }
 }
+
+/**************************************************************************/
+/*!
+   @brief    Draw a circle outline
+    @param    x0   Center-point x coordinate
+    @param    y0   Center-point y coordinate
+    @param    r   Radius of circle
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawCircle(int16_t x0, int16_t y0, int16_t r,
+                              uint16_t color) {
+#if defined(ESP8266)
+  yield();
+#endif
+  int16_t f = 1 - r;
+  int16_t ddF_x = 1;
+  int16_t ddF_y = -2 * r;
+  int16_t x = 0;
+  int16_t y = r;
+
+  startWrite();
+  writePixel(x0, y0 + r, color);
+  writePixel(x0, y0 - r, color);
+  writePixel(x0 + r, y0, color);
+  writePixel(x0 - r, y0, color);
+
+  while (x < y) {
+    if (f >= 0) {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+
+    writePixel(x0 + x, y0 + y, color);
+    writePixel(x0 - x, y0 + y, color);
+    writePixel(x0 + x, y0 - y, color);
+    writePixel(x0 - x, y0 - y, color);
+    writePixel(x0 + y, y0 + x, color);
+    writePixel(x0 - y, y0 + x, color);
+    writePixel(x0 + y, y0 - x, color);
+    writePixel(x0 - y, y0 - x, color);
+  }
+  endWrite();
+}
+
+/**************************************************************************/
+/*!
+    @brief    Quarter-circle drawer, used to do circles and roundrects
+    @param    x0   Center-point x coordinate
+    @param    y0   Center-point y coordinate
+    @param    r   Radius of circle
+    @param    cornername  Mask bit #1 or bit #2 to indicate which quarters of
+   the circle we're doing
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawCircleHelper(int16_t x0, int16_t y0, int16_t r,
+                                    uint8_t cornername, uint16_t color) {
+  int16_t f = 1 - r;
+  int16_t ddF_x = 1;
+  int16_t ddF_y = -2 * r;
+  int16_t x = 0;
+  int16_t y = r;
+  int16_t xold = x;
+
+  while (x < y) {
+    if (f >= 0) {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+    if (f >= 0 || x == y) {
+      if (cornername & 0x4) { // SE
+        drawFastHLine(x0 + xold + 1, y0 + y, x - xold, color);
+        drawFastVLine(x0 + y, y0 + xold + 1, x - xold, color);
+      }
+      if (cornername & 0x2) { // NE
+        drawFastHLine(x0 + xold + 1, y0 - y, x - xold, color);
+        drawFastVLine(x0 + y, y0 - x, x - xold, color);
+      }
+      if (cornername & 0x8) { // SW
+        drawFastVLine(x0 - y, y0 + xold + 1, x - xold, color);
+        drawFastHLine(x0 - x, y0 + y, x - xold, color);
+      }
+      if (cornername & 0x1) { // NW
+        drawFastVLine(x0 - y, y0 - x, x - xold, color);
+        drawFastHLine(x0 - x, y0 - y, x - xold, color);
+      }
+      xold = x;
+    }
+  }
+}
+
+/**************************************************************************/
+/*!
+   @brief    Draw a circle with filled color
+    @param    x0   Center-point x coordinate
+    @param    y0   Center-point y coordinate
+    @param    r   Radius of circle
+    @param    color 16-bit 5-6-5 Color to fill with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::fillCircle(int16_t x0, int16_t y0, int16_t r,
+                              uint16_t color) {
+  startWrite();
+  writeFastVLine(x0, y0 - r, 2 * r + 1, color);
+  fillCircleHelper(x0, y0, r, 3, 0, color);
+  endWrite();
+}
+
+/**************************************************************************/
+/*!
+    @brief  Quarter-circle drawer with fill, used for circles and roundrects
+    @param  x0       Center-point x coordinate
+    @param  y0       Center-point y coordinate
+    @param  r        Radius of circle
+    @param  corners  Mask bits indicating which quarters we're doing
+    @param  delta    Offset from center-point, used for round-rects
+    @param  color    16-bit 5-6-5 Color to fill with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
+                                    uint8_t corners, int16_t delta,
+                                    uint16_t color) {
+
+  int16_t f = 1 - r;
+  int16_t ddF_x = 1;
+  int16_t ddF_y = -2 * r;
+  int16_t x = 0;
+  int16_t y = r;
+  int16_t px = x;
+  int16_t py = y;
+
+  delta++; // Avoid some +1's in the loop
+
+  while (x < y) {
+    if (f >= 0) {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+    // These checks avoid double-drawing certain lines, important
+    // for the SSD1306 library which has an INVERT drawing mode.
+    if (x < (y + 1)) {
+      if (corners & 1)
+        writeFastVLine(x0 + x, y0 - y, 2 * y + delta, color);
+      if (corners & 2)
+        writeFastVLine(x0 - x, y0 - y, 2 * y + delta, color);
+    }
+    if (y != py) {
+      if (corners & 1)
+        writeFastVLine(x0 + py, y0 - px, 2 * px + delta, color);
+      if (corners & 2)
+        writeFastVLine(x0 - py, y0 - px, 2 * px + delta, color);
+      py = y;
+    }
+    px = x;
+  }
+}
+
+
+
+
+
+
+
+
 
 /*!
     @brief  Essentially writePixel() with a transaction around it. I don't
