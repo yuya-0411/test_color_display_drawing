@@ -2178,6 +2178,60 @@ void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::fillTriangle(int16_t x0, int16_t y0, i
   endWrite();
 }
 
+/**************************************************************************/
+/*!
+   @brief   Draw a rounded rectangle with no fill color
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    w   Width in pixels
+    @param    h   Height in pixels
+    @param    r   Radius of corner rounding
+    @param    color 16-bit 5-6-5 Color to draw with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                                 int16_t r, uint16_t color) {
+  int16_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
+  if (r > max_radius)
+    r = max_radius;
+  // smarter version
+  startWrite();
+  writeFastHLine(x + r, y, w - 2 * r, color);         // Top
+  writeFastHLine(x + r, y + h - 1, w - 2 * r, color); // Bottom
+  writeFastVLine(x, y + r, h - 2 * r, color);         // Left
+  writeFastVLine(x + w - 1, y + r, h - 2 * r, color); // Right
+  // draw four corners
+  drawCircleHelper(x + r, y + r, r, 1, color);
+  drawCircleHelper(x + w - r - 1, y + r, r, 2, color);
+  drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, color);
+  drawCircleHelper(x + r, y + h - r - 1, r, 8, color);
+  endWrite();
+}
+
+/**************************************************************************/
+/*!
+   @brief   Draw a rounded rectangle with fill color
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    w   Width in pixels
+    @param    h   Height in pixels
+    @param    r   Radius of corner rounding
+    @param    color 16-bit 5-6-5 Color to draw/fill with
+*/
+/**************************************************************************/
+void Adafruit_SPITFT_DBI_TYPE_C_MODIFIED::fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                                 int16_t r, uint16_t color) {
+  int16_t max_radius = ((w < h) ? w : h) / 2; // 1/2 minor axis
+  if (r > max_radius)
+    r = max_radius;
+  // smarter version
+  startWrite();
+  writeFillRect(x + r, y, w - 2 * r, h, color);
+  // draw four corners
+  fillCircleHelper(x + w - r - 1, y + r, r, 1, h - 2 * r - 1, color);
+  fillCircleHelper(x + r, y + r, r, 2, h - 2 * r - 1, color);
+  endWrite();
+}
 
 
 

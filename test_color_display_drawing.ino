@@ -62,7 +62,12 @@ void setup()
 
   // 三角形の描画
   // display.drawTriangle(150, 150, 200, 90, 250, 150, ILI9327_BLACK);
-  display.fillTriangle(150, 150, 200, 90, 250, 150, ILI9327_BLACK);
+  // display.fillTriangle(150, 150, 200, 90, 250, 150, ILI9327_BLACK);
+
+  // 丸みの帯びた矩形の描画
+  // 塗りつぶしなしでは角のRがうまく描画されない
+  display.drawRoundRect(100, 60, 200, 120, 10, ILI9327_NAVY);
+  // display.fillRoundRect(100, 60, 200, 120, 10, ILI9327_NAVY);
 
 
   delay(10);
